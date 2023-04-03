@@ -46,6 +46,7 @@
             this.ck2Bit = new System.Windows.Forms.CheckBox();
             this.ckImages = new System.Windows.Forms.CheckBox();
             this.ckMono = new System.Windows.Forms.CheckBox();
+            this.ckTruncate = new System.Windows.Forms.CheckBox();
             this.gChars.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -207,7 +208,7 @@
             // ckImages
             // 
             this.ckImages.AutoSize = true;
-            this.ckImages.Location = new System.Drawing.Point(241, 116);
+            this.ckImages.Location = new System.Drawing.Point(241, 139);
             this.ckImages.Name = "ckImages";
             this.ckImages.Size = new System.Drawing.Size(74, 17);
             this.ckImages.TabIndex = 10;
@@ -224,11 +225,24 @@
             this.ckMono.Text = "Моноширинный";
             this.ckMono.UseVisualStyleBackColor = true;
             // 
+            // ckTruncate
+            // 
+            this.ckTruncate.AutoSize = true;
+            this.ckTruncate.Checked = true;
+            this.ckTruncate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckTruncate.Location = new System.Drawing.Point(241, 116);
+            this.ckTruncate.Name = "ckTruncate";
+            this.ckTruncate.Size = new System.Drawing.Size(102, 17);
+            this.ckTruncate.TabIndex = 12;
+            this.ckTruncate.Text = "Обрезать края";
+            this.ckTruncate.UseVisualStyleBackColor = true;
+            // 
             // fMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(349, 261);
+            this.Controls.Add(this.ckTruncate);
             this.Controls.Add(this.ckMono);
             this.Controls.Add(this.ckImages);
             this.Controls.Add(this.ck2Bit);
@@ -272,6 +286,7 @@
         private System.Windows.Forms.CheckBox ck2Bit;
         private System.Windows.Forms.CheckBox ckImages;
         private System.Windows.Forms.CheckBox ckMono;
+        private System.Windows.Forms.CheckBox ckTruncate;
     }
 }
 

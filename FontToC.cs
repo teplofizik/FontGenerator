@@ -21,6 +21,7 @@ namespace FontConv
 
         int _MaxHeight;     // max height of symbol
 
+        bool _Truncate = false;
         bool _Mono = false;
         bool _2Bit = false;
 
@@ -46,6 +47,19 @@ namespace FontConv
         {
             get { return _2Bit; }
             set { _2Bit = value; }
+        }
+
+        public bool Truncate
+        {
+            get
+            {
+                return _Truncate;
+            }
+
+            set
+            {
+                _Truncate = value;
+            }
         }
 
         public bool Monospaced
@@ -140,16 +154,16 @@ namespace FontConv
             int max_width = 0;
 
             for (int i = '0'; i <= '9'; i++) // numbers
-                num_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), true).Width), num_width);
+                num_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), Truncate).Width), num_width);
             
             for (int i = ' '; i <= 255; i++) // all
-                max_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), true).Width), max_width);
+                max_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), Truncate).Width), max_width);
 
             float mintop = float.MaxValue, maxbot = 0;
 
             for (int i = 0; i < 256; i++) // ANSI table
             {
-                RectangleF rect = GetSymbolRect(Convert.ToByte(i), true);
+                RectangleF rect = GetSymbolRect(Convert.ToByte(i), Truncate);
                 mintop = Math.Min(rect.Top, mintop);
                 maxbot = Math.Max(rect.Bottom, maxbot);    
             }
@@ -164,7 +178,7 @@ namespace FontConv
                 else
                 { 
                     if (i == 32)
-                        width = Convert.ToInt32(GetSymbolSize(32, false).Width);
+                        width = Truncate ? Convert.ToInt32(GetSymbolSize(32, false).Width) : num_width;
                 
                     if ((i >= '0') && (i <= '9'))
                         width = num_width;
@@ -184,17 +198,17 @@ namespace FontConv
             int max_width = 0;
 
             for (int i = '0'; i <= '9'; i++) // numbers
-                num_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), true).Width), num_width);
+                num_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), Truncate).Width), num_width);
         
             for (int i = 1; i < 256; i++)
             {
                 if (Text.IndexOf(W1251ToUnicode(Convert.ToByte(i))) >= 0)
-                    max_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), true).Width), max_width);
+                    max_width = Math.Max(Convert.ToInt32(GetSymbolSize(Convert.ToByte(i), Truncate).Width), max_width);
             }
 
             // First 
             if (Text[0] != ' ')
-                ConvertSymbol(Convert.ToByte(32), Convert.ToInt32(GetSymbolSize(32, false).Width)); // first symbol - space
+                ConvertSymbol(Convert.ToByte(32), Truncate ? Convert.ToInt32(GetSymbolSize(32, false).Width) : num_width); // first symbol - space
 
             for (int i = 1; i < 256; i++)
             {
@@ -206,7 +220,7 @@ namespace FontConv
                     else
                     {
                         if (i == 32)
-                            width = Convert.ToInt32(GetSymbolSize(32, false).Width);
+                            width = Truncate ? Convert.ToInt32(GetSymbolSize(32, false).Width) : num_width;
 
                         if ((i >= '0') && (i <= '9'))
                             width = num_width;
@@ -521,31 +535,46 @@ namespace FontConv
 
             if ((lines_left + lines_right) > w) { lines_right = w - lines_left; };
 
-            int _w = w - lines_left - lines_right + _Left + _Right;
-            if (width > 0)
+            int _w = w;
+            if (Truncate)
             {
-                int __w = _w;
-
-                _w = width;
-                if (width >= w)
+                _w = w - lines_left - lines_right + _Left + _Right;
+                if (width > 0)
                 {
-                    lines_left = _Left;
-                    _w = w;
-                }
-                else //if (width >= _w) (width < _w)
-                {
-                    lines_left -= (width - __w) / 2;
-                }
+                    int __w = _w;
 
-                if (lines_left < _Left) lines_left = _Left;
+                    _w = width;
+                    if (width >= w)
+                    {
+                        lines_left = _Left;
+                        _w = w;
+                    }
+                    else //if (width >= _w) (width < _w)
+                    {
+                        lines_left -= (width - __w) / 2;
+                    }
+
+                    if (lines_left < _Left) lines_left = _Left;
+                }
             }
-
+            else
+            {
+                lines_left = _Left;
+                lines_right = _Right;
+                if ((width > 0) && (width > _w))
+                {
+                    _w = width - _Left - _Right;
+                    lines_left = _Left + (width - _w) / 2;
+                }
+            }
             int LastOffset = _Data.Count;
             _Index.Add(_Data.Count);
 
             _Data.Add(Convert.ToByte(_w));   // w
             _Data.Add(Convert.ToByte(h - lines_aft - lines_bef));   // h
             _Data.Add(Convert.ToByte((lines_bef & 0x0F) + ((lines_aft << 4) & 0xF0))); // How many lines skip before textout
+
+            Debug.WriteLine($"W: {_w} H:{h - lines_aft - lines_bef}");
 
             byte temp = 0;
             byte cntr = 0;
@@ -607,7 +636,7 @@ namespace FontConv
                 int ord = symbol[0];
                 if (_TempFolder != "")
                 {
-                    bmp.Save(_TempFolder + Convert.ToString(Convert.ToInt16(symb)) + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                    bmp.Save(_TempFolder + Convert.ToString(Convert.ToInt16(Blocks.Count - 1)) + ".png", System.Drawing.Imaging.ImageFormat.Png);
                 }
                 bmp.Dispose();
             }

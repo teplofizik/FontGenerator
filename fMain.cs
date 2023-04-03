@@ -75,6 +75,7 @@ namespace FontConv
 
             ftc.TwoBitMode = ck2Bit.Checked;
             ftc.Monospaced = ckMono.Checked;
+            ftc.Truncate = ckTruncate.Checked;
             ftc.Left = 1;
             ftc.Right = 1;
             if (chAll.Checked)
